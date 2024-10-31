@@ -15,6 +15,7 @@ int value = 0;
 void setup_wifi();
 void callback(char* topic, byte* payload, unsigned int length);
 void reconnect();
+void sendMessage(long now);
 
 void setup() {
   wm.resetSettings();
