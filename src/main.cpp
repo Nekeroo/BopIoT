@@ -4,8 +4,8 @@
 NetworkManager networkManager;
 
 void setup() {
-  wm.resetSettings();
   Serial.begin(115200);
+  networkManager.resetSettings();
   networkManager.initialize();
 }
 
