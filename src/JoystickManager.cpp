@@ -26,21 +26,21 @@ void JoystickManager::initialize() {
 JoystickState JoystickManager::getStateUpdated() {
     int xValue = analogRead(xPin);
     int yValue = analogRead(yPin);
-    int buttonValue = analogRead(buttonPin);
+    int buttonValue = digitalRead(buttonPin);
 
     if (xValue < centerX - thresholdX) {
-        Serial.print("Left!");
-        return LEFT;
-    } else if (xValue > centerX + thresholdX) {
         Serial.print("Right!");
         return RIGHT;
+    } else if (xValue > centerX + thresholdX) {
+        Serial.print("Left!");
+        return LEFT;
     }else if (yValue < centerY - thresholdY) {
         Serial.print("Bottom!");
         return BOTTOM;
     } else if (yValue > centerY + thresholdY) {
         Serial.print("Top!");
         return TOP;
-    } else if(buttonValue == LOW) {
+    } else if(buttonValue == HIGH) {
         Serial.print("Button pressed!");
         return BUTTON_PRESSED;
     } else {
