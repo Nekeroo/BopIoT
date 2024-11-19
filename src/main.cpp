@@ -8,14 +8,14 @@ WiFiClient espClient;
 WiFiManager wm;
 PubSubClient clientMqtt(espClient);
 unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE	(50)
+bool shouldRespond = false; // Flag pour indiquer si une commande a été reçue
+#define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
 
 void setup_wifi();
 void callback(char* topic, byte* payload, unsigned int length);
 void reconnect();
-void sendMessage(long now);
+void sendMessage();
 
 void setup() {
   wm.resetSettings();
@@ -26,66 +26,64 @@ void setup() {
 }
 
 void loop() {
-
   if (WiFi.status() == WL_CONNECTED && !clientMqtt.connected()) {
     reconnect();
   }
   
   clientMqtt.loop();
 
-  unsigned long now = millis();
-  sendMessage(now);
+  if (shouldRespond) {
+    sendMessage();
+    shouldRespond = false; // Après avoir envoyé un message, on attend une nouvelle commande
+  }
 }
 
 void setup_wifi() {
-
   wm.autoConnect("BopIoTSpot", "securiteMax");
-
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message reçu [");
   Serial.print(topic);
   Serial.print("] ");
+  
+  String message = "";
   for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    message += (char)payload[i];
   }
-  Serial.println();
+  Serial.println(message);
 
+  // Vérification si le message contient "command"
+  if (message.indexOf("request") != -1) {
+    Serial.println("Commande détectée !");
+    shouldRespond = true; // Active le flag pour envoyer une réponse
+  }
 }
 
 void reconnect() {
-  // Loop until we're reconnected
+  // Tentative de reconnexion
   while (!clientMqtt.connected()) {
     Serial.print("Connexion au broker MQTT ...");
-    // Create a random client ID
     String clientId = "mqttx_";
     clientId += String(random(0xffff), HEX);
-    // Attempt to connect
     if (clientMqtt.connect(clientId.c_str())) {
       Serial.println("connecté");
-      // Once connected, publish an announcement...
-      clientMqtt.publish("test", "Client connecté : ", clientId);
-      // ... and resubscribe
-      clientMqtt.subscribe("test");
+      // Publication d'un message pour notifier la connexion
+      clientMqtt.publish("bopiotexchange", "Client connecté");
+      // S'abonner au topic
+      clientMqtt.subscribe("bopiotexchange");
     } else {
       Serial.print("Echec, rc=");
       Serial.print(clientMqtt.state());
       Serial.println("Retry dans 5 secondes");
-      // Wait 5 seconds before retrying
       delay(5000);
     }
   }
 }
 
-
-void sendMessage(long now) {
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
-    Serial.print("Message envoyé: ");
-    Serial.println(msg);
-    clientMqtt.publish("test", msg);
-  }
+void sendMessage() {
+  snprintf(msg, MSG_BUFFER_SIZE, "{\"message\": \"%s\"}", "Commande traitée");
+  Serial.print("Message envoyé: ");
+  Serial.println(msg);
+  clientMqtt.publish("bopiotexchange", msg);
 }
