@@ -11,7 +11,7 @@
 
 class NetworkManager {
   const char* mqtt_server = "broker.emqx.io";
-  const char* name = 'BopIoT-953';
+  const char* name = "BopIoT-953";
   WiFiClient espClient;
   WiFiManager wm;
   PubSubClient clientMqtt;
