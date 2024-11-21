@@ -3,8 +3,7 @@
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_Sensor.h>
 #include "MicroManager.h"
-
-// int mic_pin = 34;       
+    
 // int digitalPin = 25;    
 // int digitalVal;         
 // volatile int clapCount = 0; 
@@ -43,13 +42,10 @@
 
 
 MicroManager microManager;
+bool isClaped = false;
 
 void IRAM_ATTR clapedInterrupt() {
-  microManager.currentClapTime = millis();  
-  
-  if (microManager.currentClapTime -microManager.lastClapTime > microManager.debounceTime) {
-    microManager.microClap = true;
-  }
+  isClaped = true;
 }
 
 void setup() {
@@ -57,16 +53,21 @@ void setup() {
   //networkManager.initialize();
   microManager.initialize();
   pinMode(microManager.micPin, INPUT_PULLUP);  
-  attachInterrupt(microManager.micPin, clapedInterrupt, FALLING);  
+  attachInterrupt(microManager.micPin, clapedInterrupt, RISING);  
 
 }
 
 void loop() {
   //networkManager.reconnectIfNeeded();
   // clientMqtt.loop();
-  Serial.println(digitalRead(microManager.micPin));
-  if (microManager.microClapDetect()){
-    Serial.println("MIC CLAP");
+  if (isClaped){
+    isClaped = false;
+    long currentClapTime = millis();  
+  
+    if (currentClapTime - microManager.lastClapTime > microManager.debounceTime) {
+      microManager.clapCount++;
+      microManager.lastClapTime = currentClapTime;  
+    }
   }
-  delay(500);
+  microManager.microUpdate();
 }
