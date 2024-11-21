@@ -4,7 +4,7 @@
 
 JoystickManager joystickManager;
 NetworkManager networkManager;
-
+boolean shouldRespond;
 void IRAM_ATTR pressedInterrupt() {
   joystickManager.currentActionTime = millis();  
   
@@ -15,20 +15,23 @@ void IRAM_ATTR pressedInterrupt() {
 
 void setup() {
   Serial.begin(115200);
-  //networkManager.initialize();
+  networkManager.initialize();
   joystickManager.initialize();
   attachInterrupt(digitalPinToInterrupt(joystickManager.buttonPin), pressedInterrupt, FALLING);  
 
 }
 
 void loop() {
-  //networkManager.reconnectIfNeeded();
-  // clientMqtt.loop();
-
-  JoystickState state = joystickManager.getStateUpdated();
+  JoystickState state = NONE;
+  networkManager.reconnectIfNeeded();
+  if (networkManager.shouldRespond) {
+    state = joystickManager.getStateUpdated();
+    networkManager.shouldRespond = false;
+  }
 
   if (state != NONE) {
-    Serial.println(state);
+    networkManager.sendMqttMessage(::RESPONSE, state);
+    state = NONE;
   }
   delay(500);
 }

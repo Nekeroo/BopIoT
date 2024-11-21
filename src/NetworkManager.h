@@ -9,18 +9,26 @@
 
 #define MQTT_MSG_BUFFER_SIZE (50)
 
+
+enum MessageType {
+  ERROR,
+  ACTION,
+  RESPONSE
+};
+
 class NetworkManager {
   const char* mqtt_server = "broker.emqx.io";
   const char* name = "BopIoT-953";
   WiFiClient espClient;
   WiFiManager wm;
   PubSubClient clientMqtt;
-
+  
   void setup_wifi();
   static void callback(char* topic, byte* payload, unsigned int length);
 
 
 public:
+  static boolean shouldRespond;
   NetworkManager(): clientMqtt(espClient) {};
   void initialize();
   void reconnectIfNeeded();

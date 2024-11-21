@@ -4,6 +4,8 @@
 
 #include "NetworkManager.h"
 
+boolean NetworkManager::shouldRespond = false;
+
 void NetworkManager::initialize() {
     setup_wifi();
     clientMqtt.setServer(mqtt_server, 1883);
@@ -21,11 +23,13 @@ void NetworkManager::callback(char* topic, byte* payload, unsigned int length) {
     }
 
     if (message.indexOf("\"type\" : 1") != -1) {
-        // TODO: Require action from user
+        shouldRespond = true;
     }
 }
 
 void NetworkManager::reconnectIfNeeded() {
+    clientMqtt.loop();
+
     if (WiFi.status() == WL_CONNECTED && !clientMqtt.connected()) {
         // Tentative de reconnexion
         while (!clientMqtt.connected()) {

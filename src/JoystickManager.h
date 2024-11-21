@@ -8,12 +8,12 @@
 #include <Arduino.h>
 
 enum JoystickState {
-    NONE,
-    LEFT,
-    RIGHT,
-    TOP,
-    BOTTOM,
-    BUTTON_PRESSED
+    NONE = 9,
+    LEFT = 5,
+    RIGHT = 4,
+    TOP = 6,
+    BOTTOM = 7,
+    BUTTON_PRESSED = 0
   };
 
 class JoystickManager {
