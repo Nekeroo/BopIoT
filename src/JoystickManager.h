@@ -5,6 +5,8 @@
 #ifndef JOYSTICKMANAGER_H
 #define JOYSTICKMANAGER_H
 
+#include <Arduino.h>
+
 enum JoystickState {
     NONE,
     LEFT,
@@ -17,7 +19,6 @@ enum JoystickState {
 class JoystickManager {
     const int xPin = 34;
     const int yPin = 35;
-    const int buttonPin = 25;
 
     int centerX = 0;
     int centerY = 0;
@@ -25,6 +26,14 @@ class JoystickManager {
     int thresholdY = 0;
 
 public:
+
+    static const int buttonPin = 25;
+
+    int digitalVal;         
+    unsigned long lastActionTime = 0; 
+    unsigned long currentActionTime = 0; 
+    const unsigned long debounceTime = 200; 
+    volatile bool buttonPressed = false;
     /**
     * Initialize and sync joysticks
     */
@@ -34,6 +43,8 @@ public:
     * @return some of RIGHT, LEFT, TOP, BOTTOM or NONE values
     */
     JoystickState getStateUpdated();
+
+    // void IRAM_ATTR pressedInterrupt();
 };
 
 

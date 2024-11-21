@@ -1,49 +1,56 @@
-//
-// Created by Gaetan Salvi on 19/11/2024.
-//
-
 #include "JoystickManager.h"
 #include <Arduino.h>
 
+// Ensure buttonPressed is volatile for use in ISR
+volatile bool buttonPressed = false;
+
+// Initialization function
 void JoystickManager::initialize() {
     pinMode(xPin, INPUT);
     pinMode(yPin, INPUT);
-    pinMode(buttonPin, INPUT);
+    pinMode(buttonPin, INPUT_PULLUP);
 
-    // Calibration automatique
+    // Calibration for neutral position
     centerX = analogRead(xPin);
     centerY = analogRead(yPin);
-    thresholdX = analogRead(xPin) / 2;
-    thresholdY = analogRead(yPin) / 2;
 
+    // Set a fixed threshold for joystick movement
+    thresholdX = 100; // Example value
+    thresholdY = 100;
 
-    Serial.print("Valeur neutre X: ");
+    // Debugging output
+    Serial.print("Neutral X: ");
     Serial.print(centerX);
-    Serial.print("    |    Valeur neutre Y: ");
+    Serial.print(" | Neutral Y: ");
     Serial.println(centerY);
 }
 
+
+// Function to get updated joystick state
 JoystickState JoystickManager::getStateUpdated() {
+    // Read joystick and button values
     int xValue = analogRead(xPin);
     int yValue = analogRead(yPin);
-    int buttonValue = digitalRead(buttonPin);
 
-    if (xValue < centerX - thresholdX) {
-        Serial.print("Right!");
-        return RIGHT;
-    } else if (xValue > centerX + thresholdX) {
-        Serial.print("Left!");
-        return LEFT;
-    }else if (yValue < centerY - thresholdY) {
-        Serial.print("Bottom!");
-        return BOTTOM;
-    } else if (yValue > centerY + thresholdY) {
-        Serial.print("Top!");
-        return TOP;
-    } else if(buttonValue == HIGH) {
-        Serial.print("Button pressed!");
+    if (buttonPressed) {
+        buttonPressed = false;
+        Serial.println("Button Pressed!");
         return BUTTON_PRESSED;
-    } else {
-        return NONE;
     }
+
+    if (xValue > centerX + thresholdX) {
+        Serial.println("Right!");
+        return RIGHT;
+    } else if (xValue < centerX - thresholdX) {
+        Serial.println("Left!");
+        return LEFT;
+    } else if (yValue > centerY + thresholdY) {
+        Serial.println("Top!");
+        return TOP;
+    } else if (yValue < centerY - thresholdY) {
+        Serial.println("Bottom!");
+        return BOTTOM;
+    }
+
+    return NONE;
 }
