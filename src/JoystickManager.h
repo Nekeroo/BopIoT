@@ -27,7 +27,7 @@ class JoystickManager {
 
 public:
 
-    static const int buttonPin = 25;
+    static const int buttonPin = 26;
 
     int digitalVal;         
     unsigned long lastActionTime = 0; 
