@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include "NetworkManager.h"
 #include "JoystickManager.h"
+#include "AccelerometreManager.h"
+#include "MicroManager.h"
 
 JoystickManager joystickManager;
 NetworkManager networkManager;
 MicroManager micromanager;
+AccelerometreManager accelerometreManager
 boolean shouldRespond;
 bool isClaped = false;
 void IRAM_ATTR pressedInterrupt() {
@@ -24,22 +27,30 @@ void setup() {
   networkManager.initialize();
   joystickManager.initialize();
   micromanager.initialize();
+  accelerometreManager.initialize();
   attachInterrupt(digitalPinToInterrupt(joystickManager.buttonPin), pressedInterrupt, FALLING);  
   attachInterrupt(microManager.micPin, clapedInterrupt, RISING);  
 }
 
 void loop() {
-  JoystickState state = NONE;
+  JoystickState joystickState = NONE;
+  AccelerometreState acceleroState = NONE;
   networkManager.reconnectIfNeeded();
   if (networkManager.shouldRespond) {
-    state = joystickManager.getStateUpdated();
+    joystickState = joystickManager.getStateUpdated();
+    acceleroState = accelerometreManager.getStateUpdated();
     microManager.microUpdate();
     networkManager.shouldRespond = false;
   }
 
-  if (state != NONE) {
-    networkManager.sendMqttMessage(::RESPONSE, state);
-    state = NONE;
+  if (joystickState != NONE) {
+    networkManager.sendMqttMessage(::RESPONSE, joystickState);
+    joystickState = NONE;
+  }
+
+  if (acceleroState != NONE) {
+    networkManager.sendMqttMessage(::RESPONSE, acceleroState);
+    acceleroState = NONE;
   }
 
   if (isClaped){
@@ -57,6 +68,7 @@ void loop() {
       networkManager.sendMqttMessage(::RESPONSE, 3);
       microManager.clapDetected = false;
   }
+
 
   delay(500);
 }
