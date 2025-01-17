@@ -2,8 +2,8 @@
 #include <Arduino.h>
 
 void AccelerometreManager::initialize() {
-
-
+  mma = Adafruit_MMA8451();
+  float biaisX, biaisY, biaisZ, accelX, accelY, accelZ;
   float sommeX = 0, sommeY = 0, sommeZ = 0, sommeAccelX = 0, sommeAccelY = 0, sommeAccelZ = 0;
   const int numMesures = 100;
   
@@ -46,11 +46,11 @@ AccelerometreState AccelerometreManager::getStateUpdated() {
     uint8_t o = mma.getOrientation();
     switch (o) {
         case MMA8451_PL_LRF: 
-        return RIGHT;
+        return RIGHT_ACCELERO;
         case MMA8451_PL_LLF: 
         Serial.println("Landscape Left Front");
-        return LEFT;
+        return LEFT_ACCELERO;
         }
-    return NONE;
+    return NONE_ACCELERO;
     
 }
