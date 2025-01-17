@@ -12,17 +12,25 @@ void NetworkManager::initialize() {
     clientMqtt.setCallback(callback);
 }
 
+void NetworkManager::loopClientMqtt() {
+    clientMqtt.loop();
+}
+
 void NetworkManager::setup_wifi() {
     wm.autoConnect(name, "securiteMax");
 }
 
 void NetworkManager::callback(char* topic, byte* payload, unsigned int length) {
+    
     String message = "";
     for (int i = 0; i < length; i++) {
         message += (char)payload[i];
     }
 
-    if (message.indexOf("\"type\" : 1") != -1) {
+    Serial.print("message : ");
+    Serial.println(message);
+    if (message.indexOf("\"type\":1") != -1) {
+        Serial.println("OK shouldRespond");
         shouldRespond = true;
     }
 }

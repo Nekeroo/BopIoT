@@ -32,6 +32,7 @@ public:
   NetworkManager(): clientMqtt(espClient) {};
   void initialize();
   void reconnectIfNeeded();
+  void loopClientMqtt();
   void sendMqttMessage(int type, int actionId);
   void resetSettings();
 };

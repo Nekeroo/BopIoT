@@ -8,9 +8,13 @@ boolean shouldRespond;
 void IRAM_ATTR pressedInterrupt() {
   joystickManager.currentActionTime = millis();  
   
+  Serial.println("Interrupt");
+
   if (joystickManager.currentActionTime -joystickManager.lastActionTime > joystickManager.debounceTime) {
     joystickManager.buttonPressed = true;
   }
+
+  Serial.println("Interrupt 2");
 }
 
 void setup() {
@@ -25,13 +29,15 @@ void loop() {
   JoystickState state = NONE;
   networkManager.reconnectIfNeeded();
   if (networkManager.shouldRespond) {
+    Serial.println("shouldRespond");
     state = joystickManager.getStateUpdated();
-    networkManager.shouldRespond = false;
   }
 
   if (state != NONE) {
+    Serial.print("state :");
+    Serial.println(state);
     networkManager.sendMqttMessage(::RESPONSE, state);
     state = NONE;
+    networkManager.shouldRespond = false;
   }
-  delay(500);
 }
